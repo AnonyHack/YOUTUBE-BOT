@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 CONFIG = {
     'token': os.getenv('BOT_TOKEN'),
     'admin_ids': [int(admin_id) for admin_id in os.getenv('ADMIN_IDS', '').split(',') if admin_id],
-    'required_channels': os.getenv('REQUIRED_CHANNELS', '').split(','),
-    'channel_links': os.getenv('CHANNEL_LINKS', '').split(',')
+    'required_channels': os.getenv('REQUIRED_CHANNELS', 'Megahubbots').split(','),
+    'channel_links': os.getenv('CHANNEL_LINKS', 'https://t.me/megahubbots').split(',')
 }
 
 # Webhook configuration
@@ -253,20 +253,15 @@ async def is_member_of_channels(user_id: int, context: CallbackContext) -> bool:
 
 async def send_force_join_message(update: Update):
     """Send force join message with buttons for all channels."""
-    # Only create buttons for valid channel/link pairs
-    buttons = []
-    for channel, link in zip(CONFIG['required_channels'], CONFIG['channel_links']):
-        if channel and link:
-            buttons.append([InlineKeyboardButton(f"Join {channel}", url=link)])
-    if not buttons:
-        # Fallback: just send a message if no valid buttons
-        await update.message.reply_text(
-            "🚨 You must join all required channels to use this bot.\n\n"
-            "After joining, type /start again."
-        )
+    if not CONFIG['channel_links']:
         return
-
+        
+    buttons = [
+        [InlineKeyboardButton(f"Join {channel}", url=link)]
+        for channel, link in zip(CONFIG['required_channels'], CONFIG['channel_links'])
+    ]
     reply_markup = InlineKeyboardMarkup(buttons)
+    
     await update.message.reply_text(
         "🚨 You must join all required channels to use this bot.\n\n"
         "After joining, type /start again.",
