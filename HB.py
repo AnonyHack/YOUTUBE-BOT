@@ -253,15 +253,20 @@ async def is_member_of_channels(user_id: int, context: CallbackContext) -> bool:
 
 async def send_force_join_message(update: Update):
     """Send force join message with buttons for all channels."""
-    if not CONFIG['channel_links']:
+    # Only create buttons for valid channel/link pairs
+    buttons = []
+    for channel, link in zip(CONFIG['required_channels'], CONFIG['channel_links']):
+        if channel and link:
+            buttons.append([InlineKeyboardButton(f"Join {channel}", url=link)])
+    if not buttons:
+        # Fallback: just send a message if no valid buttons
+        await update.message.reply_text(
+            "🚨 You must join all required channels to use this bot.\n\n"
+            "After joining, type /start again."
+        )
         return
-        
-    buttons = [
-        [InlineKeyboardButton(f"Join {channel}", url=link)]
-        for channel, link in zip(CONFIG['required_channels'], CONFIG['channel_links'])
-    ]
+
     reply_markup = InlineKeyboardMarkup(buttons)
-    
     await update.message.reply_text(
         "🚨 You must join all required channels to use this bot.\n\n"
         "After joining, type /start again.",
