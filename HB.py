@@ -404,7 +404,7 @@ from aiohttp import web
 PORT = int(os.environ.get('PORT', 10000))
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = os.environ.get('WEBHOOK_URL', '') + WEBHOOK_PATH
-RENDER = os.environ.get('RENDER', '')
+RENDER = os.environ.get('RENDER', 'https://youtube-bot-fdcc.onrender.com')
 
 async def health_check(request):
     return web.Response(text="OK")
