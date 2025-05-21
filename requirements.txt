@@ -4,3 +4,4 @@ pytube
 requests
 aiohttp
 python-dotenv>=0.19
+python-telegram-bot[webhooks]==20.3
