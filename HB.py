@@ -397,5 +397,43 @@ async def ytdl(_, update):
             video = phd.download(),
             
         )
-print("HB")
-HB.run()
+import asyncio
+from aiohttp import web
+
+# Webhook configuration
+PORT = int(os.environ.get('PORT', 10000))
+WEBHOOK_PATH = "/webhook"
+WEBHOOK_URL = os.environ.get('WEBHOOK_URL', '') + WEBHOOK_PATH
+RENDER = os.environ.get('RENDER', '')
+
+async def health_check(request):
+    return web.Response(text="OK")
+
+async def telegram_webhook(request):
+    data = await request.json()
+    await HB.process_update(data)
+    return web.Response(text="OK")
+
+async def main():
+    await HB.start()
+    if RENDER:
+        # Set webhook
+        await HB.set_webhook(WEBHOOK_URL)
+        app = web.Application()
+        app.router.add_post(WEBHOOK_PATH, telegram_webhook)
+        app.router.add_get("/", health_check)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", PORT)
+        await site.start()
+        print(f"Webhook running on {WEBHOOK_URL}")
+        while True:
+            await asyncio.sleep(3600)
+    else:
+        await HB.run()
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        pass
