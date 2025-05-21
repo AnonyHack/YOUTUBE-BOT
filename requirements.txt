@@ -3,3 +3,4 @@ tgcrypto
 pytube
 requests
 aiohttp
+python-dotenv>=0.19
